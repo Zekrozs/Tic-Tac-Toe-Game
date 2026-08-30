@@ -45,6 +45,23 @@ function cell(){
   return {getValue,markCell}
 }
 
+function player(name,mark){
+  const player = {
+    name: name,
+    mark: mark
+  }
+  const getPlayerMark = () => player.mark
+  const getPlayerName = () => player.name
+  return{getPlayerMark,getPlayerName}
+}
+
+
+
+// const Zaid = player('zaid',X)
+
+// console.log(getPlayerMark())
+// console.log(getPlayerName())
+
 let game = gameBoard();
 game.markSquare(1,2);
 console.log(game.getBoard())
