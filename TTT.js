@@ -14,13 +14,21 @@ const board = (function gameBoard() {
   const getBoard = () => board;
 
   const markSquare = function (row, column, player) {
+    if(row && column < 0 || row && column >= 3){
+      console.log('please mark a valid cell')
+      return false
+    }  
     if (board[row][column].getValue() !== 0) {
       console.log("cell is already marked");
-      return;
+      return false;
     }
 
+    
     board[row][column].markCell(player);
-  };
+    return true;
+    } 
+      
+  
 
   // creates a 2d array. .map creates an array and throws the result
   // of the loop inside it.
@@ -85,46 +93,47 @@ function gameState() {
       console.log(`${activePLayer.getPlayerName()} wins!`);
       return true;
     }
-    
-    const boardFull = currentBoard.every(row=>{
-     return row.every(cell => cell !== 0)
-    })
 
-    if(boardFull){
-      console.log('its a tie!')
-      return false
+    const boardFull = currentBoard.every((row) => {
+      return row.every((cell) => cell !== 0);
+    });
+
+    if (boardFull) {
+      console.log("its a tie!");
+      return true;
     }
 
     return false;
   };
 
   const resetGame = () => {
-    activePLayer = playerOne
-    board.getBoard().forEach(row => {
-      row.forEach(cell => cell.markCell())})
-      console.log(board.printBoard())
-  }
+    activePLayer = playerOne;
+    board.getBoard().forEach((row) => {
+      row.forEach((cell) => cell.markCell());
+    });
+    console.log(board.printBoard());
+  };
 
   const playRound = (row, column) => {
-    console.log(`${activePLayer.getPlayerName()}'s turn`);
+        console.log(`${activePLayer.getPlayerName()}'s turn`);
+    if (!board.markSquare(row, column, activePLayer.getPlayerMark())) return;
     console.log(
       `${activePLayer.getPlayerName()} marked row ${row + 1} column ${column + 1}`,
     );
-    board.markSquare(row, column, activePLayer.getPlayerMark());
     console.table(board.printBoard());
-    checkWinner();
+    if (checkWinner()) return;
     switchTurn();
   };
 
-  return { playRound,resetGame };
+  return { playRound, resetGame };
 }
 
 const game = gameState();
 game.playRound(1, 1);
-game.playRound(2, 1);
-game.playRound(1, 0);
-game.playRound(2, 0);
-game.playRound(1, 2);
+game.playRound(1, 1);
+game.playRound(1, 9);
+// game.playRound(2, 0);
+// game.playRound(1, 2);
 // game.playRound(0, 0); // X
 // game.playRound(0, 1); // O
 // game.playRound(0, 2); // X
@@ -134,4 +143,4 @@ game.playRound(1, 2);
 // game.playRound(2, 1); // X
 // game.playRound(2, 0); // O
 // game.playRound(2, 2); // X
-game.resetGame()
+game.resetGame();
