@@ -1,18 +1,21 @@
 "use strict";
+const dialog = document.getElementById('dialog-box')
+dialog.showModal()  
 
 function DOM(){
   const form = document.getElementById('form')
   const formData = new FormData(form) 
   const formValues = Object.fromEntries(formData)
-  const inputFields = document.querySelectorAll('.name')
+  const playersScreenNames = document.querySelectorAll('.name')
   
-  const getPlayerNames = () =>{
-  return Object.values(formValues)
-}
-const updateFieldText = () => {
+  const allPlayers  = Object.values(formValues)
 
+
+const updateNames = () => {
+  playersScreenNames.forEach((name,index) => name.textContent = allPlayers[index])
 }
- return{getPlayerNames}
+
+ return{updateNames,allPlayers}
 }
 
 
@@ -80,10 +83,10 @@ function player(name, mark) {
 
 function gameState() {
   const playersNames = DOM()
-  const playerOne = player(playersNames.getPlayerNames()[0], "X");
-  const playerTwo = player(playersNames.getPlayerNames()[1], "O");
+  const playerOne = player(playersNames.allPlayers[0], "X");
+  const playerTwo = player(playersNames.allPlayers[1], "O");
+  playersNames.updateNames()
 
-  const 
 
   let activePLayer = playerOne;
   const switchTurn = () => {
@@ -139,7 +142,7 @@ function gameState() {
       row.forEach((cell) => cell.markCell());
     });
     playerOne.resetScore()
-    playerTwo.resetScore
+    playerTwo.resetScore()
     console.log(board.printBoard());
   };
 
@@ -158,18 +161,17 @@ function gameState() {
 }
 
 const game = gameState();
-// game.playRound(0, 0); // X
-// game.playRound(1, 1); // O
-// game.playRound(0, 1); // X
-// game.playRound(1, 2); // O
-// game.playRound(0, 2); // X
-// game.resetGame();
-// game.playRound(0, 0); // X
-// game.playRound(1, 1); // O
-// game.playRound(0, 1); // X
-// game.playRound(1, 2); // O
-// game.playRound(0, 2); // X
+game.playRound(0, 0); // X
+game.playRound(1, 1); // O
+game.playRound(0, 1); // X
+game.playRound(1, 2); // O
+game.playRound(0, 2); // X
+game.resetGame();
+game.playRound(0, 0); // X
+game.playRound(1, 1); // O
+game.playRound(0, 1); // X
+game.playRound(1, 2); // O
+game.playRound(0, 2); // X
 
-const dialog = document.getElementById('dialog-box')
-dialog.showModal()
+
 
