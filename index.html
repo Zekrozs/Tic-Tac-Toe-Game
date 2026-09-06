@@ -10,36 +10,52 @@
 <body>
   <article class="main-container">
     <section class="player-one">
-        <div class="name">player Two</div>
+        <div class="name">player one</div>
+        <div class="symbol">X</div>
         <div class="rounds-won">
             <p>0</p>
         </div>
     </section>
     <section class="game">
         <div class="board">
-            <button role="button" class="cell">X</button>
-            <button role="button" class="cell">X</button>
-            <button role="button" class="cell">X</button>
-            <button role="button" class="cell">X</button>
-            <button role="button" class="cell">X</button>
-            <button role="button" class="cell">X</button>
-            <button role="button" class="cell">X</button>
-            <button role="button" class="cell">X</button>
-            <button role="button" class="cell">X</button>
+            <button role="button" class="cell" data-button="cell">X</button>
+            <button role="button" class="cell" data-button="cell">X</button>
+            <button role="button" class="cell" data-button="cell">X</button>
+            <button role="button" class="cell" data-button="cell">X</button>
+            <button role="button" class="cell" data-button="cell">X</button>
+            <button role="button" class="cell" data-button="cell">X</button>
+            <button role="button" class="cell" data-button="cell">X</button>
+            <button role="button" class="cell" data-button="cell">X</button>
+            <button role="button" class="cell" data-button="cell">X</button>
         </div>
         <div class="activePLayer">
             player one's turn
         </div>
-        <button role="button" class="start-reset-btn" data-game="start"><span class="text">Start Game</span></button>
+        <button role="button" class="show-modal" data-game="show-modal"><span class="text">enter player names</span></button>
     </section>
     <section class="player-two">
         <div class="name">
             player Two
         </div>
+        <div class="symbol">O</div>
         <div class="rounds-won">
             <p>0</p>
         </div>
     </section>
   </article>  
+  <dialog id="dialog-box">
+    <form class="form">
+        <legend>enter players names</legend>
+        <div class="input-wrapper">
+        <label for="nameX-input">player name</label>
+        <input type="text" placeholder="player X name" id="nameX-input" name="player-X-Name">
+        </div>
+        <div class="input-wrapper">
+        <label for="nameO-input">player name</label>
+        <input type="text" placeholder="player O name" id="nameO-input" name="player-O_name">
+        </div>
+        <button role="button" class="start-reset-btn" data-game="start"><span class="text">Start Game</span></button>
+    </form>
+  </dialog>
 </body>
 </html>
