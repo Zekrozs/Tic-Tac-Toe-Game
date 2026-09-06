@@ -1,5 +1,21 @@
 "use strict";
 
+function DOM(){
+  const form = document.getElementById('form')
+  const formData = new FormData(form) 
+  const formValues = Object.fromEntries(formData)
+  const inputFields = document.querySelectorAll('.name')
+  
+  const getPlayerNames = () =>{
+  return Object.values(formValues)
+}
+const updateFieldText = () => {
+
+}
+ return{getPlayerNames}
+}
+
+
 const board = (function gameBoard() {
   const rows = 3;
   const columns = 3;
@@ -14,7 +30,7 @@ const board = (function gameBoard() {
   const getBoard = () => board;
 
   const markSquare = function (row, column, player) {
-    if(row && column < 0 || row && column >= 3){
+    if(row < 0 || row > 2 || column < 0 || column > 2){
       console.log('please mark a valid cell')
       return false
     }  
@@ -52,15 +68,22 @@ function player(name, mark) {
   const player = {
     name: name,
     mark: mark,
+    roundsWon: 0
   };
   const getPlayerMark = () => player.mark;
   const getPlayerName = () => player.name;
-  return { getPlayerMark, getPlayerName };
+  const incrementWonRounds = () => player.roundsWon++
+  const getPlayerScore = () =>player.roundsWon
+  const resetScore = () => player.roundsWon = 0
+  return { getPlayerMark, getPlayerName,incrementWonRounds,getPlayerScore, resetScore };
 }
 
 function gameState() {
-  const playerOne = player("playerOne", "X");
-  const playerTwo = player("PlayerTwo", "O");
+  const playersNames = DOM()
+  const playerOne = player(playersNames.getPlayerNames()[0], "X");
+  const playerTwo = player(playersNames.getPlayerNames()[1], "O");
+
+  const 
 
   let activePLayer = playerOne;
   const switchTurn = () => {
@@ -74,6 +97,7 @@ function gameState() {
   const checkWinner = () => {
     const currentBoard = board.printBoard();
     const playerMark = activePLayer.getPlayerMark();
+    const increaseScore = () => activePLayer.incrementWonRounds()
     const winningLines = [
       ...currentBoard,
 
@@ -89,8 +113,11 @@ function gameState() {
       return line.every((cell) => cell === playerMark);
     });
 
+
     if (winner) {
       console.log(`${activePLayer.getPlayerName()} wins!`);
+      increaseScore()
+      console.log(activePLayer.getPlayerScore())
       return true;
     }
 
@@ -111,6 +138,8 @@ function gameState() {
     board.getBoard().forEach((row) => {
       row.forEach((cell) => cell.markCell());
     });
+    playerOne.resetScore()
+    playerTwo.resetScore
     console.log(board.printBoard());
   };
 
@@ -129,18 +158,18 @@ function gameState() {
 }
 
 const game = gameState();
-game.playRound(1, 1);
-game.playRound(1, 1);
-game.playRound(1, 9);
-// game.playRound(2, 0);
-// game.playRound(1, 2);
 // game.playRound(0, 0); // X
-// game.playRound(0, 1); // O
-// game.playRound(0, 2); // X
 // game.playRound(1, 1); // O
-// game.playRound(1, 0); // X
+// game.playRound(0, 1); // X
 // game.playRound(1, 2); // O
-// game.playRound(2, 1); // X
-// game.playRound(2, 0); // O
-// game.playRound(2, 2); // X
-game.resetGame();
+// game.playRound(0, 2); // X
+// game.resetGame();
+// game.playRound(0, 0); // X
+// game.playRound(1, 1); // O
+// game.playRound(0, 1); // X
+// game.playRound(1, 2); // O
+// game.playRound(0, 2); // X
+
+const dialog = document.getElementById('dialog-box')
+dialog.showModal()
+
