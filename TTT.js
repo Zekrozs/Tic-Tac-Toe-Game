@@ -8,20 +8,22 @@ let DOM = (() => {
   const dialog = document.getElementById("dialog-box");
   const mainPage = document.querySelector(".main-container");
 
-  return { formValues, playersScreenNames, dialog, form, dialog,mainPage };
+  return { formValues, playersScreenNames, dialog, form, dialog, mainPage };
 })();
 
 const gameController = (() => {
+  let allNames;
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    const allNames = getPlayersNames()
-    const validated = validation(allNames)
-    if(!validated) return
+    allNames = getPlayersNames();
+    const validated = validation(allNames);
+    if (!validated) return;
     paintScreen.updateNames(allNames);
-    const game = gameState(allNames);
-    closeDialog()
-
+    closeDialog();
+    return true;
   };
+
+  const game = () => gameState(allNames);
 
   const getPlayersNames = () => {
     const formData = new FormData(DOM.form);
@@ -29,18 +31,22 @@ const gameController = (() => {
     return Object.values(formValues);
   };
 
-  const validation = (names) =>{
-    const emptyFields = names.some(field => field === '' )
-    if(emptyFields){
-      alert('all fields are required')
-      return false
+  const validation = (names) => {
+    const emptyFields = names.some((field) => field === "");
+    if (emptyFields) {
+      alert("all fields are required");
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   const openDialog = () => DOM.dialog.showModal();
-  const closeDialog = () => DOM.dialog.close()
-  DOM.form.addEventListener("submit", handleFormSubmit);
+  const closeDialog = () => DOM.dialog.close();
+
+  DOM.form.addEventListener("submit", (e) => {
+    handleFormSubmit(e);
+    game()
+  });
 
   DOM.mainPage.addEventListener("click", (e) => {
     const target = e.target;
@@ -198,18 +204,17 @@ function gameState(players) {
     switchTurn();
   };
 
-  return { playRound, resetGame };
+  return { playRound, resetGame, checkWinner };
 }
 
-    
-game.playRound(0, 0); // X
-game.playRound(1, 1); // O
-game.playRound(0, 1); // X
-game.playRound(1, 2); // O
-game.playRound(0, 2); // X
-game.resetGame();
-game.playRound(0, 0); // X
-game.playRound(1, 1); // O
-game.playRound(0, 1); // X
-game.playRound(1, 2); // O
-game.playRound(0, 2); // X
+// game.playRound(0, 0); // X
+// game.playRound(1, 1); // O
+// game.playRound(0, 1); // X
+// game.playRound(1, 2); // O
+// game.playRound(0, 2); // X
+// game.resetGame();
+// game.playRound(0, 0); // X
+// game.playRound(1, 1); // O
+// game.playRound(0, 1); // X
+// game.playRound(1, 2); // O
+// game.playRound(0, 2); // X
