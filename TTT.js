@@ -1,15 +1,12 @@
 "use strict";
 
-let DOM = (() => {
-  const form = document.getElementById("form");
-  const formData = new FormData(form);
-  const formValues = Object.fromEntries(formData);
-  const playersScreenNames = document.querySelectorAll(".name");
-  const dialog = document.getElementById("dialog-box");
-  const mainPage = document.querySelector(".main-container");
+const DOM = {
+  form: document.getElementById("form"),
+  playersScreenNames: document.querySelectorAll(".name"),
+  dialog: document.getElementById("dialog-box"),
+  mainPage: document.querySelector(".main-container"),
+}
 
-  return { formValues, playersScreenNames, dialog, form, dialog, mainPage };
-})();
 
 const gameController = (() => {
   let allNames;
@@ -23,7 +20,7 @@ const gameController = (() => {
     return true;
   };
 
-  const game = () => gameState(allNames);
+  let game 
 
   const getPlayersNames = () => {
     const formData = new FormData(DOM.form);
@@ -45,7 +42,7 @@ const gameController = (() => {
 
   DOM.form.addEventListener("submit", (e) => {
     handleFormSubmit(e);
-    game()
+    game = gameState(allNames);
   });
 
   DOM.mainPage.addEventListener("click", (e) => {
@@ -55,17 +52,25 @@ const gameController = (() => {
     if (dialogBtn) {
       openDialog();
     }
+
+    const cell = target.closest('[data-button="cell"]')
+    if(cell){
+      const cellIndex = target.dataset.cell
+      const cellRow = Math.floor(cellIndex / 3)
+      const cellColumn = cellIndex % 3
+      game.playRound(cellRow,cellColumn)
+
+    }
   });
 })();
 
 const paintScreen = (() => {
-  const allPlayers = Object.values(DOM.formValues);
   const updateNames = (names) => {
     DOM.playersScreenNames.forEach(
       (name, index) => (name.textContent = names[index]),
     );
   };
-  return { updateNames, allPlayers };
+  return { updateNames};
 })();
 
 const board = (function gameBoard() {
@@ -192,6 +197,8 @@ function gameState(players) {
     playerTwo.resetScore();
     console.log(board.printBoard());
   };
+
+  
 
   const playRound = (row, column) => {
     console.log(`${activePLayer.getPlayerName()}'s turn`);
