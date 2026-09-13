@@ -139,7 +139,7 @@ const paintScreen = (() => {
   };
 })();
 
-const board = (function gameBoard() {
+const board = function gameBoard() {
   const rows = 3;
   const columns = 3;
   const board = [];
@@ -171,7 +171,7 @@ const board = (function gameBoard() {
     return board.map((row) => row.map((cell) => cell.getValue()));
   };
   return { markSquare, getBoard, printBoard };
-})();
+};
 
 function cell() {
   let value = 0;
@@ -206,6 +206,7 @@ function player(name, mark) {
 }
 
 function gameState(players) {
+  const gameBoard = board()
   const playerOne = player(players[0], "X");
   const playerTwo = player(players[1], "O");
   const getPlayerOneScore = () => playerOne.getPlayerScore();
@@ -221,7 +222,7 @@ function gameState(players) {
   const playerTurn = () => activePLayer.getPlayerName();
   const activePlayerMark = () => activePLayer.getPlayerMark();
   const checkWinner = () => {
-    const currentBoard = board.printBoard();
+    const currentBoard = gameBoard.printBoard();
     const playerMark = activePlayerMark()
     const increaseScore = () => activePLayer.incrementWonRounds();
     const winningLines = [
@@ -258,13 +259,13 @@ function gameState(players) {
 
   const resetGame = () => {
     activePLayer = playerOne;
-    board.getBoard().forEach((row) => {
+    gameBoard.getBoard().forEach((row) => {
       row.forEach((cell) => cell.markCell());
     });
   };
 
   const playRound = (row, column) => {
-    if (!board.markSquare(row, column, activePLayer.getPlayerMark())) return;
+    if (!gameBoard.markSquare(row, column, activePLayer.getPlayerMark())) return;
     if (checkWinner()) {
       paintScreen.renderWinner(playerTurn());
       resetGame();
