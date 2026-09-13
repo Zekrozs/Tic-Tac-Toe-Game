@@ -8,8 +8,6 @@ const DOM = {
   cells: document.querySelectorAll(".cell"),
 };
 
-
-
 const gameController = (() => {
   let game;
   let allNames;
@@ -51,7 +49,7 @@ const gameController = (() => {
       game.getPlayerTwoScore(),
     );
     paintScreen.resetBoard(DOM.cells);
-    DOM.form.reset()
+    DOM.form.reset();
     game.resetGame();
   });
 
@@ -76,7 +74,7 @@ const gameController = (() => {
         alert("Please enter the player names first.");
         return;
       }
-      const cellIndex = target.dataset.cell;
+      const cellIndex = cell.dataset.cell;
       const cellRow = Math.floor(cellIndex / 3);
       const cellColumn = cellIndex % 3;
       paintScreen.renderMark(cell, game.activePlayerMark());
@@ -124,9 +122,11 @@ const paintScreen = (() => {
       cell.classList.remove("inactive");
     });
   };
-  const deactivateCell = (clickedCell) =>{
-    clickedCell.classList.add('inactive')
-  }
+  const deactivateCell = (clickedCell) => {
+    clickedCell.classList.add("inactive");
+  };
+
+  const renderTie = () => alert('players tied')
 
   return {
     updateNames,
@@ -136,6 +136,7 @@ const paintScreen = (() => {
     renderWinner,
     resetBoard,
     deactivateCell,
+    renderTie
   };
 })();
 
@@ -195,7 +196,6 @@ function player(name, mark) {
   const getPlayerScore = () => player.roundsWon;
   const resetScore = () => (player.roundsWon = 0);
 
-
   return {
     getPlayerMark,
     getPlayerName,
@@ -206,7 +206,7 @@ function player(name, mark) {
 }
 
 function gameState(players) {
-  const gameBoard = board()
+  const gameBoard = board();
   const playerOne = player(players[0], "X");
   const playerTwo = player(players[1], "O");
   const getPlayerOneScore = () => playerOne.getPlayerScore();
@@ -223,7 +223,7 @@ function gameState(players) {
   const activePlayerMark = () => activePLayer.getPlayerMark();
   const checkWinner = () => {
     const currentBoard = gameBoard.printBoard();
-    const playerMark = activePlayerMark()
+    const playerMark = activePlayerMark();
     const increaseScore = () => activePLayer.incrementWonRounds();
     const winningLines = [
       ...currentBoard,
@@ -242,7 +242,7 @@ function gameState(players) {
 
     if (winner) {
       increaseScore();
-      return true;
+      return { status: "win", player: activePLayer };
     }
 
     const boardFull = currentBoard.every((row) => {
@@ -250,11 +250,10 @@ function gameState(players) {
     });
 
     if (boardFull) {
-      alert("its a tie!");
-      return true;
+      return { status: "tie" };
     }
 
-    return false;
+    return { status: "playing" };
   };
 
   const resetGame = () => {
@@ -265,14 +264,26 @@ function gameState(players) {
   };
 
   const playRound = (row, column) => {
-    if (!gameBoard.markSquare(row, column, activePLayer.getPlayerMark())) return;
-    if (checkWinner()) {
+    const moveAccepted = gameBoard.markSquare(row, column, activePLayer.getPlayerMark())
+    if (!moveAccepted){
+      return {status: 'invalid'};
+    }
+    const result = checkWinner();
+    if (result.status === "win") {
       paintScreen.renderWinner(playerTurn());
       resetGame();
       paintScreen.resetBoard(DOM.cells);
-      return;
+      return result
+    }
+    if (result.status === "tie") {
+      paintScreen.renderTie();
+      resetGame();
+      paintScreen.resetBoard(DOM.cells);
+      return result
     }
     switchTurn();
+
+    return result;
   };
 
   return {
