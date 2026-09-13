@@ -5,22 +5,24 @@ const DOM = {
   playersScreenNames: document.querySelectorAll(".name"),
   dialog: document.getElementById("dialog-box"),
   mainPage: document.querySelector(".main-container"),
-}
+  cells: document.querySelectorAll(".cell"),
+};
+
 
 
 const gameController = (() => {
+  let game;
   let allNames;
   const handleFormSubmit = (e) => {
     e.preventDefault();
     allNames = getPlayersNames();
     const validated = validation(allNames);
-    if (!validated) return;
+    if (!validated) return false;
     paintScreen.updateNames(allNames);
+    paintScreen.turn(allNames[0]);
     closeDialog();
     return true;
   };
-
-  let game 
 
   const getPlayersNames = () => {
     const formData = new FormData(DOM.form);
@@ -41,25 +43,50 @@ const gameController = (() => {
   const closeDialog = () => DOM.dialog.close();
 
   DOM.form.addEventListener("submit", (e) => {
-    handleFormSubmit(e);
+    const submitted = handleFormSubmit(e);
+    if (!submitted) return;
     game = gameState(allNames);
+    paintScreen.updateScores(
+      game.getPlayerOneScore(),
+      game.getPlayerTwoScore(),
+    );
+    paintScreen.resetBoard(DOM.cells);
+    DOM.form.reset()
+    game.resetGame();
   });
 
   DOM.mainPage.addEventListener("click", (e) => {
     const target = e.target;
-    const dialogBtn = target.closest('[data-game="show-modal"]');
+    const dialogBtn = target.closest('[data-button="show-modal"]');
 
     if (dialogBtn) {
       openDialog();
     }
 
-    const cell = target.closest('[data-button="cell"]')
-    if(cell){
-      const cellIndex = target.dataset.cell
-      const cellRow = Math.floor(cellIndex / 3)
-      const cellColumn = cellIndex % 3
-      game.playRound(cellRow,cellColumn)
+    const restartBtn = target.closest('[data-button = "reset"]');
 
+    if (restartBtn) {
+      paintScreen.resetBoard(DOM.cells);
+      game.resetGame();
+    }
+
+    const cell = target.closest('[data-button="cell"]');
+    if (cell) {
+      if (!game) {
+        alert("Please enter the player names first.");
+        return;
+      }
+      const cellIndex = target.dataset.cell;
+      const cellRow = Math.floor(cellIndex / 3);
+      const cellColumn = cellIndex % 3;
+      paintScreen.renderMark(cell, game.activePlayerMark());
+      paintScreen.deactivateCell(cell);
+      game.playRound(cellRow, cellColumn);
+      paintScreen.updateScores(
+        game.getPlayerOneScore(),
+        game.getPlayerTwoScore(),
+      );
+      paintScreen.turn(game.playerTurn());
     }
   });
 })();
@@ -70,7 +97,46 @@ const paintScreen = (() => {
       (name, index) => (name.textContent = names[index]),
     );
   };
-  return { updateNames};
+  const updateScores = (P1Score, P2Score) => {
+    const playerOneScoreEl = document.querySelector(
+      ".player-one .rounds-won p",
+    );
+    const playerTwoScoreEl = document.querySelector(
+      ".player-two .rounds-won p",
+    );
+    playerOneScoreEl.textContent = `score: ${P1Score}`;
+    playerTwoScoreEl.textContent = `score: ${P2Score}`;
+  };
+
+  const turn = (player) => {
+    const playerTurnEl = document.querySelector(".active-player");
+    playerTurnEl.textContent = `${player}'s turn`;
+  };
+
+  const renderMark = (sqaure, mark) => (sqaure.textContent = mark);
+
+  const renderWinner = (winner) => {
+    alert(`round winner: ${winner}`);
+  };
+  const resetBoard = (cells) => {
+    cells.forEach((cell) => {
+      cell.textContent = "";
+      cell.classList.remove("inactive");
+    });
+  };
+  const deactivateCell = (clickedCell) =>{
+    clickedCell.classList.add('inactive')
+  }
+
+  return {
+    updateNames,
+    updateScores,
+    turn,
+    renderMark,
+    renderWinner,
+    resetBoard,
+    deactivateCell,
+  };
 })();
 
 const board = (function gameBoard() {
@@ -92,7 +158,6 @@ const board = (function gameBoard() {
       return false;
     }
     if (board[row][column].getValue() !== 0) {
-      console.log("cell is already marked");
       return false;
     }
 
@@ -129,6 +194,8 @@ function player(name, mark) {
   const incrementWonRounds = () => player.roundsWon++;
   const getPlayerScore = () => player.roundsWon;
   const resetScore = () => (player.roundsWon = 0);
+
+
   return {
     getPlayerMark,
     getPlayerName,
@@ -141,6 +208,8 @@ function player(name, mark) {
 function gameState(players) {
   const playerOne = player(players[0], "X");
   const playerTwo = player(players[1], "O");
+  const getPlayerOneScore = () => playerOne.getPlayerScore();
+  const getPlayerTwoScore = () => playerTwo.getPlayerScore();
   let activePLayer = playerOne;
   const switchTurn = () => {
     if (activePLayer === playerOne) {
@@ -149,10 +218,11 @@ function gameState(players) {
       activePLayer = playerOne;
     }
   };
-
+  const playerTurn = () => activePLayer.getPlayerName();
+  const activePlayerMark = () => activePLayer.getPlayerMark();
   const checkWinner = () => {
     const currentBoard = board.printBoard();
-    const playerMark = activePLayer.getPlayerMark();
+    const playerMark = activePlayerMark()
     const increaseScore = () => activePLayer.incrementWonRounds();
     const winningLines = [
       ...currentBoard,
@@ -170,9 +240,7 @@ function gameState(players) {
     });
 
     if (winner) {
-      console.log(`${activePLayer.getPlayerName()} wins!`);
       increaseScore();
-      console.log(activePLayer.getPlayerScore());
       return true;
     }
 
@@ -181,7 +249,7 @@ function gameState(players) {
     });
 
     if (boardFull) {
-      console.log("its a tie!");
+      alert("its a tie!");
       return true;
     }
 
@@ -193,35 +261,25 @@ function gameState(players) {
     board.getBoard().forEach((row) => {
       row.forEach((cell) => cell.markCell());
     });
-    playerOne.resetScore();
-    playerTwo.resetScore();
-    console.log(board.printBoard());
   };
 
-  
-
   const playRound = (row, column) => {
-    console.log(`${activePLayer.getPlayerName()}'s turn`);
     if (!board.markSquare(row, column, activePLayer.getPlayerMark())) return;
-    console.log(
-      `${activePLayer.getPlayerName()} marked row ${row + 1} column ${column + 1}`,
-    );
-    console.table(board.printBoard());
-    if (checkWinner()) return;
+    if (checkWinner()) {
+      paintScreen.renderWinner(playerTurn());
+      resetGame();
+      paintScreen.resetBoard(DOM.cells);
+      return;
+    }
     switchTurn();
   };
 
-  return { playRound, resetGame, checkWinner };
+  return {
+    playRound,
+    resetGame,
+    getPlayerOneScore,
+    getPlayerTwoScore,
+    playerTurn,
+    activePlayerMark,
+  };
 }
-
-// game.playRound(0, 0); // X
-// game.playRound(1, 1); // O
-// game.playRound(0, 1); // X
-// game.playRound(1, 2); // O
-// game.playRound(0, 2); // X
-// game.resetGame();
-// game.playRound(0, 0); // X
-// game.playRound(1, 1); // O
-// game.playRound(0, 1); // X
-// game.playRound(1, 2); // O
-// game.playRound(0, 2); // X
