@@ -77,14 +77,35 @@ const gameController = (() => {
       const cellIndex = cell.dataset.cell;
       const cellRow = Math.floor(cellIndex / 3);
       const cellColumn = cellIndex % 3;
-      paintScreen.renderMark(cell, game.activePlayerMark());
+
+      const result = game.playRound(cellRow, cellColumn);
+
+      paintScreen.renderMark(cell, result.mark);
       paintScreen.deactivateCell(cell);
-      game.playRound(cellRow, cellColumn);
+
+      if (result.status === "invalid") {
+        return;
+      }
+
+      if (result.status === "win") {
+        paintScreen.renderWinner(result.playerName);
+        game.resetGame();
+        paintScreen.resetBoard(DOM.cells);
+        return result;
+      }
+
+      if (result.status === "tie") {
+        paintScreen.renderTie();
+        game.resetGame();
+        paintScreen.resetBoard(DOM.cells);
+        return result;
+      }
       paintScreen.updateScores(
         game.getPlayerOneScore(),
         game.getPlayerTwoScore(),
       );
-      paintScreen.turn(game.playerTurn());
+
+      paintScreen.turn(result.nextPlayer);
     }
   });
 })();
@@ -126,7 +147,7 @@ const paintScreen = (() => {
     clickedCell.classList.add("inactive");
   };
 
-  const renderTie = () => alert('players tied')
+  const renderTie = () => alert("players tied");
 
   return {
     updateNames,
@@ -136,7 +157,7 @@ const paintScreen = (() => {
     renderWinner,
     resetBoard,
     deactivateCell,
-    renderTie
+    renderTie,
   };
 })();
 
@@ -211,6 +232,9 @@ function gameState(players) {
   const playerTwo = player(players[1], "O");
   const getPlayerOneScore = () => playerOne.getPlayerScore();
   const getPlayerTwoScore = () => playerTwo.getPlayerScore();
+  const getCurrentName = () => activePLayer.getPlayerName()
+  const getCurrentMark = () => activePLayer.getPlayerMark()
+
   let activePLayer = playerOne;
   const switchTurn = () => {
     if (activePLayer === playerOne) {
@@ -219,11 +243,9 @@ function gameState(players) {
       activePLayer = playerOne;
     }
   };
-  const playerTurn = () => activePLayer.getPlayerName();
-  const activePlayerMark = () => activePLayer.getPlayerMark();
   const checkWinner = () => {
     const currentBoard = gameBoard.printBoard();
-    const playerMark = activePlayerMark();
+    const playerMark = getCurrentMark()
     const increaseScore = () => activePLayer.incrementWonRounds();
     const winningLines = [
       ...currentBoard,
@@ -264,26 +286,38 @@ function gameState(players) {
   };
 
   const playRound = (row, column) => {
-    const moveAccepted = gameBoard.markSquare(row, column, activePLayer.getPlayerMark())
-    if (!moveAccepted){
-      return {status: 'invalid'};
+    const playerName = getCurrentName();
+    const mark = getCurrentMark();
+    const moveAccepted = gameBoard.markSquare(
+      row,
+      column,
+      activePLayer.getPlayerMark(),
+    );
+    if (!moveAccepted) {
+      return { status: "invalid" };
     }
     const result = checkWinner();
     if (result.status === "win") {
-      paintScreen.renderWinner(playerTurn());
-      resetGame();
-      paintScreen.resetBoard(DOM.cells);
-      return result
+      return {
+        ...result,
+        mark,
+        playerName,
+      };
     }
-    if (result.status === "tie") {
-      paintScreen.renderTie();
-      resetGame();
-      paintScreen.resetBoard(DOM.cells);
-      return result
-    }
-    switchTurn();
 
-    return result;
+    if (result.status === "tie") {
+      return {
+        ...result,
+        mark,
+      };
+    }
+
+    switchTurn();
+    return {
+      status: "playing",
+      mark,
+      nextPlayer: activePLayer.getPlayerName(),
+    };
   };
 
   return {
@@ -291,7 +325,7 @@ function gameState(players) {
     resetGame,
     getPlayerOneScore,
     getPlayerTwoScore,
-    playerTurn,
-    activePlayerMark,
+    // playerName,
+    // activePlayerMark,
   };
 }
