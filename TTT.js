@@ -6,9 +6,13 @@ const DOM = {
   dialog: document.getElementById("dialog-box"),
   mainPage: document.querySelector(".main-container"),
   cells: document.querySelectorAll(".cell"),
+  playerOneScore: document.querySelector(".player-one .rounds-won p"),
+  playerTwoScore: document.querySelector(".player-two .rounds-won p"),
+  activePlayer: document.querySelector(".active-player"),
+
 };
 
-const gameController = (() => {
+ (() => {
   let game;
   let allNames;
   const handleFormSubmit = (e) => {
@@ -25,11 +29,12 @@ const gameController = (() => {
   const getPlayersNames = () => {
     const formData = new FormData(DOM.form);
     const formValues = Object.fromEntries(formData);
-    return Object.values(formValues);
+  return Object.values(formValues).map((name) => name.trim());
+
   };
 
   const validation = (names) => {
-    const emptyFields = names.some((field) => field === "");
+    const emptyFields = names.some((field) => field.trim() === "");
     if (emptyFields) {
       alert("all fields are required");
       return false;
@@ -66,6 +71,7 @@ const gameController = (() => {
     if (restartBtn) {
       paintScreen.resetBoard(DOM.cells);
       game.resetGame();
+      paintScreen.turn(game.getCurrentName())
     }
 
     const cell = target.closest('[data-button="cell"]');
@@ -91,6 +97,10 @@ const gameController = (() => {
         paintScreen.renderWinner(result.playerName);
         game.resetGame();
         paintScreen.resetBoard(DOM.cells);
+        paintScreen.updateScores(
+          game.getPlayerOneScore(),
+          game.getPlayerTwoScore(),
+        );
         return result;
       }
 
@@ -100,10 +110,6 @@ const gameController = (() => {
         paintScreen.resetBoard(DOM.cells);
         return result;
       }
-      paintScreen.updateScores(
-        game.getPlayerOneScore(),
-        game.getPlayerTwoScore(),
-      );
 
       paintScreen.turn(result.nextPlayer);
     }
@@ -117,19 +123,12 @@ const paintScreen = (() => {
     );
   };
   const updateScores = (P1Score, P2Score) => {
-    const playerOneScoreEl = document.querySelector(
-      ".player-one .rounds-won p",
-    );
-    const playerTwoScoreEl = document.querySelector(
-      ".player-two .rounds-won p",
-    );
-    playerOneScoreEl.textContent = `score: ${P1Score}`;
-    playerTwoScoreEl.textContent = `score: ${P2Score}`;
+    DOM.playerOneScore.textContent = `score: ${P1Score}`;
+    DOM.playerTwoScore.textContent = `score: ${P2Score}`;
   };
 
   const turn = (player) => {
-    const playerTurnEl = document.querySelector(".active-player");
-    playerTurnEl.textContent = `${player}'s turn`;
+    DOM.activePlayer.textContent = `${player}'s turn`;
   };
 
   const renderMark = (sqaure, mark) => (sqaure.textContent = mark);
@@ -175,7 +174,7 @@ const board = function gameBoard() {
   const getBoard = () => board;
 
   const markSquare = function (row, column, player) {
-    if (row < 0 || row > 2 || column < 0 || column > 2) {
+    if (row < 0 || row >= rows || column < 0 || column >= columns) {  
       console.log("please mark a valid cell");
       return false;
     }
@@ -232,8 +231,8 @@ function gameState(players) {
   const playerTwo = player(players[1], "O");
   const getPlayerOneScore = () => playerOne.getPlayerScore();
   const getPlayerTwoScore = () => playerTwo.getPlayerScore();
-  const getCurrentName = () => activePLayer.getPlayerName()
-  const getCurrentMark = () => activePLayer.getPlayerMark()
+  const getCurrentName = () => activePLayer.getPlayerName();
+  const getCurrentMark = () => activePLayer.getPlayerMark();
 
   let activePLayer = playerOne;
   const switchTurn = () => {
@@ -245,7 +244,7 @@ function gameState(players) {
   };
   const checkWinner = () => {
     const currentBoard = gameBoard.printBoard();
-    const playerMark = getCurrentMark()
+    const playerMark = getCurrentMark();
     const increaseScore = () => activePLayer.incrementWonRounds();
     const winningLines = [
       ...currentBoard,
@@ -325,7 +324,6 @@ function gameState(players) {
     resetGame,
     getPlayerOneScore,
     getPlayerTwoScore,
-    // playerName,
-    // activePlayerMark,
+    getCurrentName
   };
 }
